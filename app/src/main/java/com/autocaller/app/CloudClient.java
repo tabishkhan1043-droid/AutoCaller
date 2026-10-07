@@ -111,7 +111,19 @@ public final class CloudClient {
                         + " for cmd=" + commandId);
                 return false;
             }
-            // Body may be { "ok": true }. Don't be picky about its shape.
+            // Apps Script returns HTTP 200 for application-level errors, so
+            // honor an explicit { "ok": false } instead of treating it as an ACK.
+            if (!respBody.trim().isEmpty()) {
+                try {
+                    JsonObject ackResult = JsonParser.parseString(respBody).getAsJsonObject();
+                    if (ackResult.has("ok") && !ackResult.get("ok").getAsBoolean()) {
+                        Log.w(TAG, "AutoCaller: ACK rejected for cmd=" + commandId);
+                        return false;
+                    }
+                } catch (Exception ignored) {
+                    // A non-JSON 2xx response remains compatible with simple relays.
+                }
+            }
             return true;
         } catch (IOException e) {
             Log.e(TAG, "AutoCaller: ACK network failure — " + e.getMessage());

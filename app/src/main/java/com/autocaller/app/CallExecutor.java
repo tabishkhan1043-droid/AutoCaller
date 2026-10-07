@@ -1,6 +1,6 @@
 // ============================================================
 // File: app/src/main/java/com/autocaller/app/CallExecutor.java
-// Auto Caller — fires the ACTION_CALL intent for a parsed payload.
+// Auto Caller — submits outgoing calls to Android Telecom.
 //
 // Returns a structured result that the service uses to ACK the
 // command back to the relay (status "done" or "error").
@@ -10,12 +10,10 @@ package com.autocaller.app;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
+import android.os.Bundle;
+import android.telecom.TelecomManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -56,7 +54,7 @@ public final class CallExecutor {
             return new Result(Status.ERROR, sanitized);
         }
 
-        return fireCallIntent(sanitized);
+        return submitCallToTelecom(sanitized);
     }
 
     /** Same path used by the "Send Test Call" button in MainActivity. */
@@ -72,17 +70,22 @@ public final class CallExecutor {
     }
 
     @SuppressLint("MissingPermission")
-    private Result fireCallIntent(String phone) {
+    private Result submitCallToTelecom(String phone) {
         try {
-            Intent intent = new Intent(Intent.ACTION_CALL,
-                    Uri.parse("tel:" + Uri.encode(phone)));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-            context.startActivity(intent);
+            TelecomManager telecom = (TelecomManager)
+                    context.getSystemService(Context.TELECOM_SERVICE);
+            if (telecom == null) {
+                throw new IllegalStateException("Android Telecom service is unavailable");
+            }
+
+            // Submit directly to Android Telecom instead of trying to launch
+            // an Activity from a background service (restricted on recent Android).
+            telecom.placeCall(Uri.fromParts("tel", phone, null), new Bundle());
 
             int count = prefs.incrementCallsToday();
-            Logger.get().log("Call placed to " + phone + " — calls today=" + count);
-            Log.i(TAG, "AutoCaller: call placed → " + phone);
+            Logger.get().log("Call request submitted to Telecom for " + phone
+                    + " — calls today=" + count);
+            Log.i(TAG, "AutoCaller: call submitted to Telecom → " + phone);
             return new Result(Status.DONE, phone);
         } catch (SecurityException se) {
             Logger.get().log("CallExecutor: SecurityException — " + se.getMessage());

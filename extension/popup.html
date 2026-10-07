@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoCaller</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">AC</div>
+      <div class="brand-copy">
+        <p class="eyebrow">ANDROID SIM CALLING</p>
+        <h1>AutoCaller</h1>
+      </div>
+      <span id="connectionBadge" class="badge badge-off">Setup needed</span>
+    </header>
+
+    <section class="call-panel" aria-labelledby="callHeading">
+      <h2 id="callHeading">Place a call</h2>
+      <p class="intro">Enter a number and press the button. Your paired Android phone places the call from its SIM.</p>
+
+      <form id="callForm" novalidate>
+        <label for="phoneNumber">Phone number</label>
+        <input
+          id="phoneNumber"
+          name="phoneNumber"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          maxlength="32"
+          placeholder="+92 300 1234567"
+          aria-describedby="numberHint">
+        <p id="numberHint" class="field-hint">Use a country code when possible. No call is sent until you press the button.</p>
+        <button id="callButton" class="primary-button" type="submit" disabled>
+          <span class="button-icon" aria-hidden="true">↗</span>
+          <span>Call from my phone</span>
+        </button>
+      </form>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+      <button id="cancelRequest" class="cancel-button" type="button" hidden>Clear request (verify first)</button>
+    </section>
+
+    <aside class="notice-card">
+      <span class="notice-icon" aria-hidden="true">i</span>
+      <p>Calls use your phone’s SIM and mobile plan. Your carrier may charge for the call.</p>
+    </aside>
+
+    <details id="settingsDetails" class="settings">
+      <summary>Connection &amp; pairing</summary>
+      <div class="settings-body">
+        <label for="serverUrl">Free relay URL</label>
+        <input id="serverUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://script.google.com/macros/s/…/exec">
+        <p class="field-hint">Paste the deployed Google Apps Script URL ending in <code>/exec</code>.</p>
+
+        <label for="sharedSecret" class="secret-label">Shared secret</label>
+        <div class="secret-row">
+          <input id="sharedSecret" type="password" autocomplete="new-password" spellcheck="false" placeholder="Use the same secret on Android">
+          <button id="toggleSecret" class="small-button" type="button" aria-label="Show shared secret">Show</button>
+        </div>
+        <button id="generateSecret" class="text-button" type="button">Generate a random secret</button>
+
+        <label for="deviceId">Device ID</label>
+        <input id="deviceId" type="text" autocomplete="off" maxlength="64" value="phone1" placeholder="phone1">
+        <p class="field-hint">This must exactly match the Device ID in the Android app.</p>
+
+        <div class="settings-actions">
+          <button id="saveSettings" class="secondary-button" type="button">Save settings</button>
+          <button id="testConnection" class="secondary-button" type="button">Test relay</button>
+        </div>
+        <p class="privacy-note">Settings are stored in this Chrome profile. The same relay URL, secret and device ID must be entered in Auto Caller on Android.</p>
+      </div>
+    </details>
+
+    <footer>Private connection · Google Apps Script relay · No paid VPS</footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
