@@ -407,7 +407,7 @@ public final class MainActivity extends AppCompatActivity {
                 running ? R.color.status_ok : R.color.status_bad));
         tvCallsToday.setText(getString(R.string.calls_today, calls));
         if (lastPoll > 0) {
-            CharSequence ago = DateUtils.getRelativeTimeSpanToString(
+            CharSequence ago = DateUtils.getRelativeTimeSpanString(
                     lastPoll,
                     System.currentTimeMillis(),
                     DateUtils.SECOND_IN_MILLIS,
