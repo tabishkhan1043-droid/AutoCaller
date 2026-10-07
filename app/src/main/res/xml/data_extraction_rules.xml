@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/xml/data_extraction_rules.xml
+  Auto Caller — Android 12+ data-extraction rules.
+
+  Used by `android:dataExtractionRules`. Backs up / transfers the
+  SharedPreferences file so the user does not have to re-enter
+  server URL / secret / device ID / enabled-flag after a restore
+  or device-to-device transfer.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="autocaller_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="autocaller_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

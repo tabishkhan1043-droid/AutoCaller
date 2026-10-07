@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/values/colors.xml
+  Auto Caller — color palette. Material3 baseline + app-specific
+  status colors.
+-->
+<resources>
+    <!-- Primary / accent (Indigo-ish blue) -->
+    <color name="primary">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="accent">#536DFE</color>
+
+    <!-- Status colors -->
+    <color name="status_ok">#2E7D32</color>     <!-- green-700 -->
+    <color name="status_bad">#C62828</color>   <!-- red-800 -->
+
+    <!-- Surfaces -->
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_dark">#121212</color>
+
+    <!-- Adaptive icon background -->
+    <color name="ic_launcher_background">#3F51B5</color>
+    <color name="ic_launcher_foreground">#FFFFFF</color>
+</resources>

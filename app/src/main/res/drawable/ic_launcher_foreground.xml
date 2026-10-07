@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/drawable/ic_launcher_foreground.xml
+  Auto Caller — adaptive-icon foreground layer.
+  White phone glyph on transparent background; tinted by the
+  adaptive-icon runtime against ic_launcher_background color.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Phone glyph centred in the inner 66x66 safe zone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M69.99,55.38c-1.23,0 -2.42,-0.2 -3.53,-0.56c-0.35,-0.12 -0.74,-0.03 -1.02,0.24l-1.57,1.97c-2.31,-1.23 -4.49,-3.46 -5.77,-5.81l1.97,-1.57c0.27,-0.28 0.36,-0.67 0.24,-1.02C58.04,47.42 57.84,46.24 57.84,45.01c0,-0.55 -0.45,-1 -1,-1H52.01C51.46,44.01 51.01,44.46 51.01,45.01c0,9.39 7.61,17 17,17c0.55,0 1,-0.45 1,-1v-2.83C71.01,55.83 70.56,55.38 69.99,55.38z" />
+
+    <!-- Subtle bell / vibration arc behind phone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.55"
+        android:pathData="M54,28c-14.36,0 -26,11.64 -26,26c0,14.36 11.64,26 26,26c14.36,0 26,-11.64 26,-26C80,39.64 68.36,28 54,28zM54,76.5c-12.43,0 -22.5,-10.07 -22.5,-22.5C31.5,41.57 41.57,31.5 54,31.5S76.5,41.57 76.5,54C76.5,66.43 66.43,76.5 54,76.5z" />
+</vector>

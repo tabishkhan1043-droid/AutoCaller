@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/values/strings.xml
+  Auto Caller — UI strings. English only (per spec).
+-->
+<resources>
+    <!-- App identity -->
+    <string name="app_name">Auto Caller</string>
+    <string name="header">Auto Caller</string>
+
+    <!-- Status card -->
+    <string name="status_running">Service: Running</string>
+    <string name="status_stopped">Service: Stopped</string>
+    <string name="last_poll_default">Last poll: never</string>
+    <string name="last_poll">Last poll: %1$s</string>
+    <string name="calls_today_default">Calls today: 0</string>
+    <string name="calls_today">Calls today: %1$d</string>
+    <string name="never">never</string>
+
+    <!-- Inputs -->
+    <string name="hint_server_url">Server URL (Apps Script Web App)</string>
+    <string name="hint_shared_secret">Shared secret</string>
+    <string name="hint_device_id">Device ID</string>
+
+    <!-- Buttons -->
+    <string name="btn_save">Save Settings</string>
+    <string name="btn_show">Show</string>
+    <string name="btn_hide">Hide</string>
+    <string name="btn_test_call">Send Test Call</string>
+    <string name="btn_restart">Restart Service</string>
+    <string name="btn_call">Call</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_request_perms">Request Permissions</string>
+    <string name="btn_battery_settings">Battery Settings</string>
+    <string name="btn_view_logs">View Logs (last 50)</string>
+    <string name="btn_copy">Copy Logs</string>
+    <string name="btn_clear">Clear</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_grant">Grant</string>
+    <string name="btn_later">Later</string>
+
+    <!-- Toggle labels -->
+    <string name="label_service_enabled">Service Enabled</string>
+
+    <!-- Test call dialog -->
+    <string name="dialog_test_call_title">Phone number to call</string>
+    <string name="hint_test_call_phone">e.g. +923001234567</string>
+
+    <!-- Permissions header -->
+    <string name="header_permissions">Permissions</string>
+    <string name="perm_status_loading">Checking permissions…</string>
+    <string name="perm_call_phone">CALL_PHONE: %1$s</string>
+    <string name="perm_post_notif">POST_NOTIFICATIONS: %1$s</string>
+    <string name="perm_battery">Battery exempt: %1$s</string>
+    <string name="perm_granted">granted</string>
+    <string name="perm_missing">missing</string>
+
+    <!-- Battery optimization dialog -->
+    <string name="battery_dialog_title">Battery optimization</string>
+    <string name="battery_dialog_msg">To prevent the system from killing the polling service during Doze mode, you should grant battery-optimization exemption. Continue?</string>
+
+    <!-- Toasts -->
+    <string name="toast_saved">Settings saved</string>
+    <string name="toast_save_first">Save settings and toggle service on first</string>
+    <string name="toast_service_restarted">Service restarted</string>
+    <string name="toast_call_perm_required">CALL_PHONE permission is required</string>
+    <string name="toast_phone_empty">Phone number is empty</string>
+    <string name="toast_call_done">Call placed to %1$s</string>
+    <string name="toast_call_failed">Call to %1$s failed (permission or system)</string>
+    <string name="toast_perms_all_granted">All permissions already granted</string>
+    <string name="toast_perms_granted">Permissions granted</string>
+    <string name="toast_perms_denied">Some permissions were denied</string>
+    <string name="toast_logs_copied">Logs copied to clipboard</string>
+
+    <!-- Logs dialog -->
+    <string name="dialog_logs_title">Logs (last 50)</string>
+    <string name="logs_empty">No logs yet.</string>
+
+    <!-- Notification -->
+    <string name="notif_channel_name">Auto Caller Service</string>
+    <string name="notif_channel_desc">Persistent notification keeping the polling service alive in the foreground.</string>
+    <string name="notif_title">Auto Caller</string>
+    <string name="notif_text_running">Auto Caller • Running</string>
+    <string name="notif_text_not_configured">Auto Caller • Not configured</string>
+</resources>

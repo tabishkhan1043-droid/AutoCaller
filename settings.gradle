@@ -1,0 +1,8 @@
+// ============================================================
+// File: settings.gradle
+// Auto Caller — Root settings file
+// Declares project name and module layout for Gradle.
+// ============================================================
+
+rootProject.name = "AutoCaller"
+include ':app'

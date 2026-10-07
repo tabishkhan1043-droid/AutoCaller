@@ -1,0 +1,21 @@
+// ============================================================
+// File: build.gradle  (project-level)
+// Auto Caller — Top-level Gradle config.
+// Plugins are declared here with `apply false` so the app
+// module (app/build.gradle) can apply them at module scope.
+// ============================================================
+
+plugins {
+    id 'com.android.application' version '8.1.4' apply false
+}
+
+// Resolve plain console warnings under modern Gradle / Android Studio.
+allprojects {
+    // Repository mode is configured via settings.gradle's
+    // dependencyResolutionManagement block when present; this
+    // empty block keeps older Studio versions happy.
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
+}

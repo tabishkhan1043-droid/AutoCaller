@@ -1,0 +1,101 @@
+// ============================================================
+// File: app/build.gradle
+// Auto Caller — application module build file.
+//
+//   Min SDK:  26 (Android 8.0)
+//   Target:   34 (Android 14)
+//   Source:   Java 11
+//   Deps:     AppCompat, Core, Material, OkHttp, Gson
+//
+// No Kotlin source — pure Java implementation.
+// ============================================================
+
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.autocaller.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.autocaller.app"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Optimize final APK size for the single supported ABI we ship.
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Optional signingConfigs block — populated only if local
+            // gradle.properties defines AUTO_CALLER_STORE_FILE.
+            //noinspection GroovyAssignabilityCheck
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        viewBinding false
+        dataBinding false
+        buildConfig true
+    }
+
+    packaging {
+        resources {
+            excludes += [
+                    'META-INF/AL2.0',
+                    'META-INF/LGPL2.1',
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'META-INF/license.txt',
+                    'META-INF/NOTICE',
+                    'META-INF/NOTICE.txt',
+                    'META-INF/notice.txt'
+            ]
+        }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    // AndroidX core libraries
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // Networking — OkHttp 4.x ships as Kotlin but is fully Java-callable
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // JSON parsing
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Unit tests (optional — kept for compile sanity)
+    testImplementation 'junit:junit:4.13.2'
+}

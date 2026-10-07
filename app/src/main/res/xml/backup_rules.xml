@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: app/src/main/res/xml/backup_rules.xml
+  Auto Caller — legacy full-backup rules (Android < 12).
+
+  Used by `android:fullBackupContent`. Backs up the SharedPreferences
+  file so the user does not have to re-enter server URL / secret /
+  device ID / enabled-flag after a restore.
+
+  NB: shared_secret is included for convenience — for high-security
+  deployments, replace this with a no-backup rule and use
+  EncryptedSharedPreferences instead.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="autocaller_prefs.xml" />
+</full-backup-content>

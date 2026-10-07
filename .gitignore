@@ -1,0 +1,55 @@
+# ============================================================
+# File: .gitignore
+# Auto Caller — Android Studio / Gradle ignores.
+# ============================================================
+
+# --- Build output -----------------------------------------
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# --- Per-module build dirs --------------------------------
+app/build/
+app/.cxx/
+app/release/
+
+# --- Native libs ------------------------------------------
+*.so
+
+# --- Keystores (NEVER commit) -----------------------------
+*.jks
+*.keystore
+keystore.properties
+release.keystore
+debug.keystore
+
+# --- Logs & local config ----------------------------------
+*.log
+*.log.*
+local.properties
+app/local.properties
+
+# --- Editor / OS junk -------------------------------------
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Gradle wrapper binary is committed (kept) -----------
+# (gradle/wrapper/gradle-wrapper.jar should be checked in)
+
+# --- Misc -------------------------------------------------
+*.apk
+*.aab
+*.ap_
+*.dex
