@@ -63,6 +63,8 @@ Requirements: Android Studio, JDK 17, Android SDK Platform 34, and a physical An
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. You can also open this repository in Android Studio and run the `app` configuration on a connected phone.
 
+If you do not have Android Studio, download the `autocaller-debug-apk` artifact from a successful [Build Android debug APK workflow run](https://github.com/tabishkhan1043-droid/AutoCaller/actions/workflows/build-android-apk.yml). Extract the artifact ZIP, then install `app-debug.apk` on the Android phone. Workflow artifacts are retained for seven days.
+
 ### First-time setup on the phone
 
 1. Install and open **Auto Caller**.
