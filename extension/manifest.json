@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AutoCaller — Android SIM Dialer",
+  "version": "1.1.0",
+  "description": "Send a phone number to your paired Android phone and place a call using its SIM.",
+  "action": {
+    "default_title": "AutoCaller",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*"
+  ]
+}

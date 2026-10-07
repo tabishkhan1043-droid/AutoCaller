@@ -1,290 +1,129 @@
-# Auto Caller — Android Background Call Service
+# AutoCaller — Chrome Extension + Android SIM Caller
 
-A companion Android app for the Shopify Auto Caller system. A Chrome
-Extension on the user's PC sends a "call this number" command to a
-Google Apps Script Web App (cloud relay). This Android app polls the
-relay, retrieves the command, and places the call from the device's
-own SIM card.
+AutoCaller lets you type a phone number in a Chrome Extension and request an outgoing call from a paired Android phone's SIM.
 
-> This app is **not** a user-facing dialer. It runs as a foreground
-> service that listens for commands and executes them. After initial
-> setup, the user never needs to open the app.
+The relay is a **Google Apps Script Web App**: no paid VPS or always-on computer is needed. Apps Script has free usage quotas, which Google can change or enforce. The phone call itself is made through the mobile carrier, so normal SIM-plan / call charges may apply.
 
----
+## How it works
 
-## System Architecture
-
-```
-┌───────────────────────┐        ┌────────────────────────┐       ┌──────────────────────┐
-│  Chrome Extension     │   POST │ Google Apps Script     │  GET  │  Auto Caller (this   │
-│  (Shopify Admin)      ├──────►│  Web App (relay)       │◄──────┤  Android app)        │
-└───────────────────────┘        └────────────────────────┘       └──────────┬───────────┘
-                                                                          │ ACTION_CALL
-                                                                          ▼
-                                                                ┌─────────────────┐
-                                                                │ Android dialer  │
-                                                                │ (SIM call)      │
-                                                                └─────────────────┘
+```text
+Chrome Extension popup                 Free relay                  Android phone
+(type number, press Call)  ──HTTPS──►  Google Apps Script  ◄──poll── Auto Caller app
+                                                                      │
+                                                                      ▼
+                                                          Android Telecom → SIM call
 ```
 
-1. Chrome Extension extracts phone number from Shopify order page.
-2. Extension POSTs to Apps Script Web App.
-3. Apps Script enqueues the command.
-4. This Android app polls (`GET ?action=poll`).
-5. App receives the command, fires `ACTION_CALL` with `tel:{phone}`.
-6. App ACKs back (`POST action=ack`) so the relay clears the queue.
+1. Type a number in the extension and press **Call from my phone**. Typing alone does not place a call.
+2. The extension queues one call request for the selected Device ID.
+3. The Android app polls the relay every five seconds while its service is enabled.
+4. Android Telecom submits the call through the phone's SIM. The app reports that the request was submitted; it cannot tell whether the other person answered.
 
----
+Only one pending call is allowed per Device ID. Use a number with a country code (for example, `+923001234567`) for reliable dialing. The Android phone needs a working SIM, mobile service, internet access for the relay, and the required permission.
 
-## Tech Stack
+## 1. Set up the free relay
 
-- **Language**: Java 11 (source/target compatibility)
-- **Min SDK**: 26 (Android 8.0)
-- **Target SDK**: 34 (Android 14)
-- **Build**: Gradle 8.0 + AGP 8.1.4
-- **Libraries**:
-  - `androidx.appcompat:appcompat:1.6.1`
-  - `androidx.core:core:1.12.0`
-  - `com.google.android.material:material:1.11.0` (required for Material3 theme)
-  - `com.squareup.okhttp3:okhttp:4.12.0`
-  - `com.google.code.gson:gson:2.10.1`
+1. Open [script.google.com](https://script.google.com) while signed in to your Google account and create a new Apps Script project.
+2. Replace the starter contents with `relay/Code.gs` from this repository and save.
+3. In **Project Settings → Script properties**, add:
+   - Property: `SHARED_SECRET`
+   - Value: a long random secret of your choice (64 hexadecimal characters is a good format).
 
-No Kotlin source. No third-party code beyond the libraries above.
+   Keep this secret private. The extension and Android app both use the same value. Do not put it in a public repository or share it in chat.
+4. Select **Deploy → New deployment → Web app**:
+   - **Execute as:** Me
+   - **Who has access:** Anyone
+5. Approve Google's authorization prompt, deploy, and copy the Web App URL ending in `/exec`.
 
----
+The deployment must allow anonymous access so the phone and extension can reach it; the shared secret protects the relay actions. If your Google Workspace administrator does not allow **Anyone**, use a personal Google account or ask the administrator to allow Apps Script web apps. Apps Script usage remains subject to current Google quotas and may be throttled if heavily used.
 
-## Cloud Relay API
+When changing `Code.gs` later, create a new deployment version (or edit the deployment to use a new version). Changing the `SHARED_SECRET` script property does not require a new deployment.
 
-### Poll — `GET`
+## 2. Install and configure the Chrome Extension
 
-```
-{BASE_URL}?action=poll&auth={SECRET}&deviceId={DEVICE_ID}
-```
+This repository contains an unpacked Chrome Extension; it is not published in the Chrome Web Store.
 
-Response:
+1. In Chrome, open `chrome://extensions` and turn **Developer mode** on.
+2. Click **Load unpacked** and select this repository's `extension/` folder.
+3. Open the AutoCaller extension popup and expand **Connection & pairing**.
+4. Enter the Apps Script `/exec` URL, the `SHARED_SECRET`, and a Device ID such as `phone1`.
+5. Click **Save settings**, then **Test relay**. If desired, use **Generate a random secret** and copy that same value into Apps Script Script Properties and the Android app.
 
-```json
-{
-  "ok": true,
-  "commands": [
-    {
-      "id": "uuid-string",
-      "action": "call",
-      "payload": {
-        "phone": "+923001234567",
-        "orderUrl": "https://admin.shopify.com/store/x/orders/123",
-        "autoRedial": false,
-        "maxRedial": 0
-      },
-      "createdAt": 1759999999999
-    }
-  ],
-  "nextPollMs": 3000,
-  "boost": true,
-  "serverTime": 1759999999999
-}
-```
+The extension stores these settings in Chrome's local extension storage. Its permissions are limited to local storage and the Google Apps Script hosts used by the relay.
 
-The app **honors `nextPollMs`** between polls. If the field is absent
-or invalid, falls back to 3s. If a network error occurs, backs off to
-15s.
-
-### Ack — `POST`
-
-```
-POST {BASE_URL}
-Content-Type: application/json
-
-{
-  "action": "ack",
-  "auth": "{SECRET}",
-  "commandId": "uuid-string",
-  "status": "done",        // or "error"
-  "result": { "phone": "+923001234567" }
-}
-```
-
-The app ACKs each command after execution whether the call succeeded
-(`done`) or failed (`error`).
-
----
-
-## Project Structure
-
-```
-AutoCaller/
-├── settings.gradle
-├── build.gradle                    (project-level)
-├── gradle.properties
-├── README.md
-├── .gitignore
-└── app/
-    ├── build.gradle                (app-level)
-    ├── proguard-rules.pro
-    └── src/main/
-        ├── AndroidManifest.xml
-        ├── java/com/autocaller/app/
-        │   ├── Constants.java          — keys, IDs, intervals
-        │   ├── Prefs.java              — SharedPreferences wrapper
-        │   ├── Logger.java             — 50-event ring buffer
-        │   ├── CloudClient.java        — OkHttp + Gson poll/ack
-        │   ├── CallExecutor.java       — ACTION_CALL intent logic
-        │   ├── CallerService.java       — foreground service + poller
-        │   ├── BootReceiver.java        — restart on device boot
-        │   └── MainActivity.java        — single-screen UI
-        └── res/
-            ├── layout/activity_main.xml
-            ├── values/{strings,colors,themes}.xml
-            ├── drawable/{ic_notification,
-            │              ic_launcher_foreground,
-            │              ic_launcher_background}.xml
-            ├── mipmap-anydpi-v26/{ic_launcher,
-            │                       ic_launcher_round}.xml
-            └── xml/{backup_rules,data_extraction_rules}.xml
-```
-
----
-
-## Build & Install
-
-### Requirements
-
-- Android Studio **Iguana** (2023.2.1) or newer
-- JDK 17 (Android Studio bundles this; no manual install needed)
-- Android SDK Platform 34 (installed via SDK Manager)
-- Build Tools 34.0.0
-- A physical Android device (min API 26) for testing — emulator
-  cannot place real calls
+## 3. Build and configure the Android app
 
 ### Build
 
-1. Open Android Studio → **Open** → select the `AutoCaller/` folder.
-2. Wait for Gradle sync to finish.
-3. Plug in your Android device, enable **USB Debugging** in
-   Developer Options.
-4. Select the device in the toolbar dropdown.
-5. Click ▶ **Run** (or `Shift+F10`).
-
-The first build will take ~1-2 minutes (Gradle download + dependency
-resolution).
-
-### Build a release APK
-
-```bash
-cd AutoCaller/
-./gradlew assembleRelease
-# APK at app/build/outputs/apk/release/app-release.apk
-# (signed with debug key by default — see app/build.gradle signingConfig)
-```
+Requirements: Android Studio, JDK 17, Android SDK Platform 34, and a physical Android phone for SIM-call testing.
 
 ```bash
 ./gradlew assembleDebug
-# APK at app/build/outputs/apk/debug/app-debug.apk
 ```
 
----
+The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. You can also open this repository in Android Studio and run the `app` configuration on a connected phone.
 
-## First-time Setup (on the phone)
+If you do not have Android Studio, download the `autocaller-debug-apk` artifact from a successful [Build Android debug APK workflow run](https://github.com/tabishkhan1043-droid/AutoCaller/actions/workflows/build-android-apk.yml). Extract the artifact ZIP, then install `app-debug.apk` on the Android phone. Workflow artifacts are retained for seven days.
 
-1. **Install the app** — see Build section.
-2. **Open Auto Caller**.
-3. The first-launch dialog asks for **battery-optimization
-   exemption**. Tap **Grant** and confirm on the system prompt. This
-   is critical for the polling service to survive Doze mode.
-4. Tap **Request Permissions** and grant:
-   - **CALL_PHONE** (required to place calls)
-   - **POST_NOTIFICATIONS** (Android 13+; required for the foreground
-     notification)
-5. In the **Server URL** field, paste your Google Apps Script Web App
-   URL. It looks like:
-   `https://script.google.com/macros/s/AKfycby.../exec`
-6. In **Shared Secret**, paste the same secret string the Chrome
-   Extension / Apps Script uses.
-7. Set **Device ID** to a unique label per phone (e.g. `phone1`).
-8. Tap **Save Settings**.
-9. Toggle **Service Enabled** to ON.
-10. (Optional) Tap **Send Test Call** to verify end-to-end.
+### First-time setup on the phone
 
-After step 9, the foreground notification "Auto Caller • Running"
-appears. The app polls the relay every `nextPollMs` milliseconds (or
-3s default). You can close the app — the service keeps running.
+1. Install and open **Auto Caller**.
+2. Grant **CALL_PHONE** and, on Android 13+, **POST_NOTIFICATIONS** when prompted.
+3. Enter the same Apps Script `/exec` URL, shared secret, and Device ID used in the extension.
+4. Tap **Save Settings**, then turn **Service Enabled** on.
+5. Keep the persistent Auto Caller notification enabled. Allow background activity / disable battery optimization for the app if your phone manufacturer otherwise stops its polling service.
+6. Check the app's status and **View Logs** if a request does not arrive.
 
----
+Android may ask you to grant the battery-optimization exemption through its own Settings screen. Phone UI and permission labels vary by manufacturer.
 
-## Day-to-day operation
+## 4. Place a call
 
-- **No user interaction needed**. The polling service runs in the
-  background.
-- The persistent notification ("Auto Caller • Running") must remain
-  visible — that is the foreground-service requirement. If you swipe
-  it away, the system will eventually kill the service.
-- **After device reboot**, the service auto-starts if you had it
-  enabled (via the BootReceiver).
-- To check what the app is doing, open it and tap **View Logs (last
-  50)** — a dialog with the last 50 events appears, with a **Copy
-  Logs** button for sharing.
+1. Click the AutoCaller icon in Chrome.
+2. Type a number, preferably in international format.
+3. Click **Call from my phone**.
+4. Keep the Android phone online with the Auto Caller service enabled. The extension waits briefly for the phone to acknowledge the request and reports whether Android Telecom accepted it.
 
----
+The call is made by the Android device and its carrier. A successful acknowledgement means Android accepted the call request—not that the destination connected. Carrier charges, country dialing rules, roaming, blocked numbers, and SIM settings still apply.
 
-## Diagnostics
+## Relay API
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Notification shows "Not configured" | Server URL or secret empty | Open app, fill fields, Save |
-| No calls placed | `CALL_PHONE` permission denied | Tap "Request Permissions" |
-| Service dies after a few minutes | Battery optimization not exempt | Tap "Battery Settings", find Auto Caller, allow background |
-| Poll error: "HTTP 401/403" | Wrong shared secret | Verify secret matches Apps Script |
-| Poll error: "Network" | No internet on phone | Check Wi-Fi / mobile data |
-| Calls today counter stuck at 0 | Service not running | Verify the persistent notification is visible |
+The Apps Script Web App implements the API already used by the Android app:
 
----
+- `GET ?action=health&auth=...` — extension connection check.
+- `POST { "action":"enqueue", "auth":"...", "phone":"+923001234567", "deviceId":"phone1" }` — add a call request.
+- `GET ?action=poll&auth=...&deviceId=phone1` — Android fetches one pending request. The response sets `nextPollMs` to 5000.
+- `POST { "action":"ack", "auth":"...", "commandId":"...", "status":"done", "result":{"phone":"..."} }` — Android acknowledges the request.
+- `POST { "action":"cancel", "auth":"...", "commandId":"...", "deviceId":"phone1", "confirmed":true }` — explicitly clear a request after the extension warns that it may already have reached the phone.
+- `GET ?action=status&auth=...&commandId=...` — extension checks the request status.
 
-## Code-Quality Notes
+Pending commands expire after 24 hours and are not automatically replayed after the Android phone has received them, to avoid accidental duplicate calls if an ACK is lost. Recent acknowledgements are retained for up to six hours so the extension can display the result. If a request remains stuck, the extension can clear it after a warning; check the phone's call log before retrying because it may already have been dialed. The relay stores queue data in Apps Script Script Properties and does not intentionally log phone numbers.
 
-- All network calls run on a background thread (the service's
-  "AutoCaller-Poller" thread). UI thread is never blocked.
-- Every network call is wrapped in try/catch and logs to logcat
-  with tag `AutoCaller` (format: `AutoCaller: <message>`).
-- No hardcoded URLs or secrets — all read from SharedPreferences.
-- The polling loop **never crashes** on:
-  - No network (logs + sleeps 15s + retries)
-  - Invalid JSON (logs + sleeps 15s + retries)
-  - Missing fields in command payload (logs + ACKs with status=error)
-  - Empty phone field (logs + ACKs with status=error)
-- The in-memory log buffer holds the last 50 events and is
-  accessible via the **View Logs** button. A **Copy Logs** button is
-  in the dialog.
+## Project structure
 
----
+```text
+AutoCaller/
+├── app/                         Android Java app
+├── extension/                   Chrome Extension (Manifest V3)
+├── relay/Code.gs                Google Apps Script serverless relay
+├── relay/test-relay.cjs         Local relay smoke tests (Node.js)
+├── README.md
+└── gradlew
+```
 
-## Security Notes
+## Checks
 
-- The `shared_secret` is stored in plain SharedPreferences. For
-  high-security deployments, replace `Prefs.java` with
-  `EncryptedSharedPreferences` from `androidx.security:security-crypto`.
-- HTTP (cleartext) traffic is allowed via
-  `android:usesCleartextTraffic="true"`. Apps Script uses HTTPS by
-  default, so this is only a fallback for self-hosted relays.
-- The `CALL_PHONE` permission is granted at runtime; the app cannot
-  place calls without explicit user consent.
+```bash
+node relay/test-relay.cjs
+node --check extension/popup.js
+./gradlew assembleDebug
+```
 
----
+The first two checks run locally without deploying anything. Building the Android app requires the Android SDK and may download Gradle/dependencies the first time.
 
-## Compatibility
+## Security and limitations
 
-| Android version | API | Status |
-|---|---|---|
-| 8.0 – 8.1 | 26-27 | ✅ Fully supported (foreground service + wake lock) |
-| 9 | 28 | ✅ |
-| 10 | 29 | ✅ (battery exemption recommended) |
-| 11 | 30 | ✅ |
-| 12 | 31 | ✅ (POST_NOTIFICATIONS not yet enforced) |
-| 13 | 33 | ✅ (POST_NOTIFICATIONS required) |
-| 14 | 34 | ✅ (FOREGROUND_SERVICE_PHONE_CALL type required) |
-
----
-
-## License
-
-Private / proprietary. Companion to the Shopify Auto Caller system.
-Not for redistribution.
+- The shared secret is a bearer credential. Keep it private and use a long random value. Requests travel over HTTPS.
+- The Android app stores the shared secret in local app preferences; the extension stores it in Chrome local storage. Protect access to those devices and profiles.
+- The relay's pending queue and recent call status are stored in Script Properties. Do not use this as a high-volume call center; Apps Script free quotas and provider rules apply.
+- The app only sends a call when a request is explicitly submitted from the extension (or when you use **Send Test Call** inside the app). Use it only for calls you are authorized to make and follow local laws and carrier terms.
+- This project does not provide free telephone service. It automates a call through the Android phone's own SIM and cannot remove carrier fees.

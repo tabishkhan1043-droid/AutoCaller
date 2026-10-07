@@ -1,8 +1,23 @@
 // ============================================================
 // File: settings.gradle
-// Auto Caller — Root settings file
-// Declares project name and module layout for Gradle.
+// Auto Caller — root settings and dependency repository config.
 // ============================================================
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
 rootProject.name = "AutoCaller"
 include ':app'

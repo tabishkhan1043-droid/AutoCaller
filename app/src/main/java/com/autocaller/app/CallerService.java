@@ -1,7 +1,7 @@
 // ============================================================
 // File: app/src/main/java/com/autocaller/app/CallerService.java
 // Auto Caller — foreground service that polls the relay and
-// fires ACTION_CALL intents.
+// submits calls through Android Telecom.
 //
 // Lifecycle:
 //   onStartCommand → startForeground → spawn Poller thread

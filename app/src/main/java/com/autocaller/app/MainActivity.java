@@ -407,7 +407,7 @@ public final class MainActivity extends AppCompatActivity {
                 running ? R.color.status_ok : R.color.status_bad));
         tvCallsToday.setText(getString(R.string.calls_today, calls));
         if (lastPoll > 0) {
-            CharSequence ago = DateUtils.getRelativeTimeSpanToString(
+            CharSequence ago = DateUtils.getRelativeTimeSpanString(
                     lastPoll,
                     System.currentTimeMillis(),
                     DateUtils.SECOND_IN_MILLIS,
@@ -423,9 +423,10 @@ public final class MainActivity extends AppCompatActivity {
     private void onShowLogs() {
         String logs = Logger.get().snapshot();
         if (logs.isEmpty()) logs = getString(R.string.logs_empty);
+        final String logsText = logs;
         // Use a TextView so the user can scroll and select.
         TextView tv = new TextView(this);
-        tv.setText(logs);
+        tv.setText(logsText);
         tv.setTextIsSelectable(true);
         tv.setPadding(48, 32, 48, 32);
         tv.setTextSize(13);
@@ -433,7 +434,7 @@ public final class MainActivity extends AppCompatActivity {
                 .setTitle(R.string.dialog_logs_title)
                 .setView(tv)
                 .setPositiveButton(R.string.btn_copy,
-                        (d, w) -> copyToClipboard(logs))
+                        (d, w) -> copyToClipboard(logsText))
                 .setNeutralButton(R.string.btn_clear,
                         (d, w) -> Logger.get().clear())
                 .setNegativeButton(R.string.btn_close, null)
